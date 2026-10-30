@@ -1,0 +1,142 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EtiquetaLog | Escáner QR</title>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 25px 15px;
+      font-family: Arial, sans-serif;
+      background: #f5f7f6;
+      color: #252525;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 450px;
+      margin: 35px auto;
+      padding: 28px 20px;
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.07);
+    }
+
+    h1 {
+      margin-bottom: 5px;
+      color: #269B75;
+    }
+
+    .subtitle {
+      color: #777;
+      font-size: 14px;
+      margin-bottom: 25px;
+    }
+
+    button {
+      background: #269B75;
+      color: white;
+      border: none;
+      border-radius: 9px;
+      padding: 14px 24px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .5;
+    }
+
+    #reader {
+      width: 100%;
+      margin: 25px auto;
+    }
+
+    #result {
+      padding: 15px;
+      background: #f1f7f4;
+      border-radius: 10px;
+      overflow-wrap: anywhere;
+      font-size: 14px;
+    }
+
+    #result a {
+      color: #269B75;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="container">
+    <h1>EtiquetaLog</h1>
+    <p class="subtitle">Sistema de consulta de etiquetas</p>
+
+    <p>Escanea el código QR de tu etiqueta.</p>
+
+    <button id="start">📷 Abrir cámara</button>
+
+    <div id="reader"></div>
+
+    <div id="result">
+      Esperando un código QR...
+    </div>
+  </main>
+
+  <script>
+    const button = document.getElementById("start");
+    const result = document.getElementById("result");
+
+    let scanner;
+
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      result.textContent = "Iniciando cámara...";
+
+      try {
+        scanner = new Html5Qrcode("reader");
+
+        await scanner.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 230, height: 230 }
+          },
+          async (decodedText) => {
+            await scanner.stop();
+
+            result.replaceChildren();
+
+            const heading = document.createElement("h3");
+            heading.textContent = "¡Código QR detectado!";
+
+            const content = document.createElement("p");
+            content.textContent = decodedText;
+
+            result.append(heading, content);
+
+            button.disabled = false;
+            button.textContent = "Escanear otro QR";
+          }
+        );
+
+        result.textContent = "Cámara activa. Apunta al código QR.";
+
+      } catch (error) {
+        result.textContent = "Error al abrir la cámara: " + error;
+        button.disabled = false;
+      }
+    });
+  </script>
+
+</body>
+</html>
